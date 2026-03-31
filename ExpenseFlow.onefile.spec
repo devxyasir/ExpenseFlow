@@ -76,7 +76,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # Windows options
-    icon=None,
+    icon='icon.ico',
     version=None,
     manifest=None,
     onefile=True,  # Single file executable

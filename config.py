@@ -78,6 +78,7 @@ AVAILABLE_PROCESSES = [
     'Stamping',
     'Renew Establishment',
     'Update Express',
+    'Fine',
 ]
 
 # Processes with special fields (additional inputs)

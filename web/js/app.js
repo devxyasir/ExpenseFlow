@@ -178,6 +178,7 @@ function showRecordDetail(recordIndex) {
     processesHtml = record.processes.map(p => {
       let amountText = `AED ${p.amount.toLocaleString()}`;
       if (p.fine) amountText += ` <span style="color:#e74c3c">(+AED ${p.fine} fine)</span>`;
+      if (p.id_fee) amountText += ` <span style="color:#e74c3c">(+AED ${p.id_fee} ID fee)</span>`;
       if (p.additional) amountText += ` <span style="color:#e74c3c">(+AED ${p.additional})</span>`;
       return `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
@@ -205,7 +206,9 @@ function showRecordDetail(recordIndex) {
             <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--amber2);">AED ${record.total_amount.toLocaleString()}</span>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn btn-danger" onclick="deleteRecord('${record._id}')">Delete</button>
+          <button class="btn btn-primary" onclick="editRecord('${record._id}', ${recordIndex})">Update</button>
           <button class="btn btn-ghost" onclick="hideRecordDetail()">Close</button>
         </div>
       </div>
@@ -322,13 +325,15 @@ const processConfig = {
   'Medical + ID': { hasFine: false, hasIdFee: true },
   'Stamping': { hasFine: false, hasAdditional: false },
   'Renew Establishment': { hasFine: false, hasAdditional: false },
-  'Update Express': { hasFine: false, hasAdditional: false }
+  'Update Express': { hasFine: false, hasAdditional: false },
+  'Fine': { hasFine: false, hasAdditional: false }
 };
 
 async function loadAddRecord() {
   // Load companies into dropdown
   try {
     const comps = await eel.get_all_companies()();
+    companies = comps; // Update global array
     const dropdown = document.getElementById('company-dropdown');
     dropdown.innerHTML = '';
     comps.forEach(c => {
@@ -349,16 +354,25 @@ function toggleCompanyDropdown() {
 }
 
 function selectCompanyForRecord(companyName) {
-  document.getElementById('record-company').value = companyName;
+  const input = document.getElementById('record-company');
+  input.value = companyName;
   document.getElementById('company-dropdown').classList.remove('active');
+  // Trigger client loading for this company
+  loadCompanyClients(companyName);
 }
 
-// Close dropdown when clicking outside
+// Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
-  const wrapper = document.querySelector('.company-input-wrapper');
-  const dropdown = document.getElementById('company-dropdown');
-  if (wrapper && !wrapper.contains(e.target)) {
-    dropdown.classList.remove('active');
+  const companyWrapper = document.querySelector('.company-input-wrapper');
+  const companyDropdown = document.getElementById('company-dropdown');
+  if (companyWrapper && !companyWrapper.contains(e.target)) {
+    companyDropdown.classList.remove('active');
+  }
+  
+  const clientDropdown = document.getElementById('client-dropdown');
+  const clientInput = document.getElementById('record-client-name');
+  if (clientDropdown && !clientInput.contains(e.target) && !clientDropdown.contains(e.target)) {
+    clientDropdown.classList.remove('active');
   }
 });
 
@@ -390,9 +404,16 @@ document.getElementById('process-select').addEventListener('change', function() 
   
   if (process) {
     specialFields.style.display = 'block';
+    
+    // // Show Fine row for processes that aren't "Fine" themselves
+    // if (process !== 'Fine') {
+    //   fineRow.style.display = 'flex';
+    // } else {
+    //   fineRow.style.display = 'none';
+    // }
+    
     const config = processConfig[process];
-    if (config.hasFine) fineRow.style.display = 'flex';
-    if (config.hasAdditional) additionalRow.style.display = 'flex';
+    if (config && config.hasIdFee) additionalRow.style.display = 'flex';
   } else {
     specialFields.style.display = 'none';
   }
@@ -404,8 +425,8 @@ function toggleFineInput() {
 }
 
 function toggleAdditionalInput() {
-  const checked = document.getElementById('has-additional').checked;
-  document.getElementById('additional-amount').style.display = checked ? 'block' : 'none';
+  const checked = document.getElementById('has-id-fee').checked;
+  document.getElementById('id-fee').style.display = checked ? 'block' : 'none';
 }
 
 function addProcessToRecord() {
@@ -432,35 +453,51 @@ function addProcessToRecord() {
   }
   
   const config = processConfig[processName];
-  let extra = 0;
-  let extraType = '';
   
-  if (config.hasFine && document.getElementById('has-fine').checked) {
-    extra = parseFloat(document.getElementById('fine-amount').value) || 0;
-    extraType = 'fine';
-  }
-  if (config.hasIdFee && document.getElementById('has-id-fee').checked) {
-    extra = parseFloat(document.getElementById('id-fee').value) || 0;
-    extraType = 'id_fee';
-  }
-  
+  // Add main process first
   selectedProcesses.push({
     name: processName,
     amount: amount,
-    extra: extra,
-    extraType: extraType
+    extra: 0,
+    extraType: ''
   });
+  
+  // Add Fine as separate process if checked
+  if (document.getElementById('has-fine').checked) {
+    const fineAmount = parseFloat(document.getElementById('fine-amount').value) || 0;
+    if (fineAmount > 0) {
+      selectedProcesses.push({
+        name: 'Fine',
+        amount: fineAmount,
+        extra: 0,
+        extraType: ''
+      });
+    }
+  }
+  
+  // Add ID fee for specific processes
+  if (config && config.hasIdFee && document.getElementById('has-id-fee').checked) {
+    const idFeeAmount = parseFloat(document.getElementById('id-fee').value) || 0;
+    if (idFeeAmount > 0) {
+      selectedProcesses.push({
+        name: 'ID Fee',
+        amount: idFeeAmount,
+        extra: 0,
+        extraType: ''
+      });
+    }
+  }
   
   // Reset form
   select.value = '';
   amountInput.value = '';
   document.getElementById('special-fields').style.display = 'none';
   document.getElementById('has-fine').checked = false;
-  document.getElementById('has-additional').checked = false;
+  document.getElementById('has-id-fee').checked = false;
   document.getElementById('fine-amount').value = '';
-  document.getElementById('additional-amount').value = '';
+  document.getElementById('id-fee').value = '';
   document.getElementById('fine-amount').style.display = 'none';
-  document.getElementById('additional-amount').style.display = 'none';
+  document.getElementById('id-fee').style.display = 'none';
   
   renderProcessList();
   updateTotal();
@@ -480,11 +517,17 @@ function renderProcessList() {
   }
   
   container.innerHTML = selectedProcesses.map((p, i) => {
-    let total = p.amount + p.extra;
+    const amount = parseFloat(p.amount) || 0;
+    const fine = parseFloat(p.fine) || 0;
+    const id_fee = parseFloat(p.id_fee) || 0;
+    const extra = parseFloat(p.extra) || 0;
+    const total = amount + fine + id_fee + extra;
+    
     let extraLabel = '';
-    if (p.extra > 0) {
-      extraLabel = p.extraType === 'fine' ? ` (+AED ${p.extra} fine)` : ` (+AED ${p.extra})`;
-    }
+    if (fine > 0) extraLabel += ` (+AED ${fine} fine)`;
+    if (id_fee > 0) extraLabel += ` (+AED ${id_fee} ID fee)`;
+    if (extra > 0 && !p.extraType) extraLabel += ` (+AED ${extra})`;
+    
     return `
       <div class="process-list-item">
         <span class="process-name">${p.name}${extraLabel}</span>
@@ -497,57 +540,114 @@ function renderProcessList() {
 
 function updateTotal() {
   let total = 0;
-  selectedProcesses.forEach(p => total += p.amount + p.extra);
+  selectedProcesses.forEach(p => {
+    const amount = parseFloat(p.amount) || 0;
+    const fine = parseFloat(p.fine) || 0;
+    const id_fee = parseFloat(p.id_fee) || 0;
+    const extra = parseFloat(p.extra) || 0;
+    total += amount + fine + id_fee + extra;
+  });
   
   document.getElementById('total-display').textContent = `AED ${total.toLocaleString()}`;
   document.getElementById('proc-count').textContent = selectedProcesses.length;
   document.getElementById('proc-subtotal').textContent = `AED ${total.toLocaleString()}`;
 }
 
-async function saveRecord() {
-  const company = document.getElementById('record-company').value.trim();
-  const clientName = document.getElementById('record-client-name').value.trim();
-  const phone = document.getElementById('record-phone').value.trim();
+// Track current company clients for dropdown
+let currentCompanyClients = [];
+
+function toggleClientDropdown() {
+  const dropdown = document.getElementById('client-dropdown');
+  dropdown.classList.toggle('active');
+}
+
+function selectClientForRecord(clientName) {
+  const input = document.getElementById('record-client-name');
+  input.value = clientName;
+  document.getElementById('client-dropdown').classList.remove('active');
+  onClientSelect(clientName);
+}
+
+// Load existing clients when company is selected/changed
+async function loadCompanyClients(companyName) {
+  const dropdown = document.getElementById('client-dropdown');
   
+  if (!companyName) {
+    if (dropdown) dropdown.innerHTML = '';
+    return;
+  }
+  
+  // Find company by name (case-insensitive search)
+  const company = companies.find(c => c.name.toLowerCase() === companyName.toLowerCase());
   if (!company) {
-    showToast('Please enter or select a company', 'warning');
+    if (dropdown) dropdown.innerHTML = '';
     return;
   }
-  if (!clientName) {
-    showToast('Please enter client name', 'warning');
-    return;
-  }
-  if (selectedProcesses.length === 0) {
-    showToast('Please add at least one process', 'warning');
-    return;
-  }
-  
-  // Build process data
-  const processes = selectedProcesses.map(p => {
-    const data = { name: p.name, amount: p.amount };
-    if (p.extra > 0) {
-      if (p.extraType === 'fine') data.fine = p.extra;
-      else if (p.extraType === 'id_fee') data.id_fee = p.extra;
-      else data.additional = p.extra;
-    }
-    return data;
-  });
-  
-  const totalAmount = selectedProcesses.reduce((sum, p) => sum + p.amount + p.extra, 0);
   
   try {
-    const result = await eel.save_record(company, clientName, phone, processes, totalAmount)();
-    if (result.success) {
-      showToast('Record saved successfully');
-      clearRecordForm();
-    } else {
-      showToast(result.error || 'Failed to save record', 'error');
+    // Get records for this company
+    const fetchedRecords = await eel.get_company_records(company._id)();
+    currentCompanyClients = fetchedRecords || [];
+    
+    if (dropdown) {
+      if (currentCompanyClients.length > 0) {
+        dropdown.innerHTML = currentCompanyClients.map(r => 
+          `<div class="company-dropdown-item" onclick="selectClientForRecord('${r.client_name}')">${r.client_name}</div>`
+        ).join('');
+      } else {
+        dropdown.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text3)">No existing clients</div>';
+      }
     }
   } catch (e) {
-    showToast('Error saving record', 'error');
-    console.error(e);
+    console.error('Failed to load clients:', e);
   }
 }
+
+// Load client data when selected from datalist
+function onClientSelect(clientName) {
+  if (!clientName) return;
+  
+  // Find the record for this client
+  const record = currentCompanyClients.find(r => r.client_name === clientName);
+  
+  const saveBtn = document.getElementById('save-record-btn');
+  
+  if (record) {
+    // Set edit mode
+    editingRecordId = record._id;
+    
+    // Populate form
+    document.getElementById('record-phone').value = record.phone || '';
+    
+    // Load processes
+    selectedProcesses = JSON.parse(JSON.stringify(record.processes || [])); // Deep clone
+    renderProcessList();
+    updateTotal();
+    
+    // Change button to update mode
+    if (saveBtn) {
+      saveBtn.textContent = 'Update Record';
+      saveBtn.onclick = function(e) {
+        e.preventDefault();
+        updateExistingRecord(e);
+      };
+    }
+    
+    showToast('Existing client loaded', 'success');
+  } else {
+    // New client mode
+    editingRecordId = null;
+    
+    // Reset button to save mode
+    if (saveBtn) {
+      saveBtn.textContent = 'Save Record';
+      saveBtn.onclick = submitNewRecord;
+    }
+  }
+}
+
+// Removed redundant saveRecord function - using submitNewRecord and updateExistingRecord instead
+
 
 function clearRecordForm() {
   document.getElementById('record-company').value = '';
@@ -665,6 +765,175 @@ async function exportToPDF() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   RECORD DELETE & UPDATE
+═══════════════════════════════════════════════════════════════ */
+
+let editingRecordId = null;
+let editingRecordIndex = null;
+
+async function deleteRecord(recordId) {
+  if (!confirm('Are you sure you want to delete this record?')) {
+    return;
+  }
+  
+  try {
+    const result = await eel.delete_record(recordId)();
+    if (result.success) {
+      showToast('Record deleted successfully', 'success');
+      hideRecordDetail();
+      // Refresh the company records
+      if (selectedCompanyId) {
+        selectCompany(selectedCompanyId);
+      }
+    } else {
+      showToast(result.error || 'Delete failed', 'error');
+    }
+  } catch (e) {
+    showToast('Delete error', 'error');
+  }
+}
+
+function editRecord(recordId, recordIndex) {
+  const record = records[recordIndex];
+  if (!record) return;
+  
+  editingRecordId = recordId;
+  editingRecordIndex = recordIndex;
+  
+  hideRecordDetail();
+  
+  // Switch to Add Record page
+  showScreen('addrecord', document.querySelectorAll('.nav-item')[2]);
+  
+  // Populate the form
+  const companyName = document.getElementById('detail-company-name').textContent;
+  document.getElementById('record-company').value = companyName;
+  document.getElementById('record-client-name').value = record.client_name;
+  document.getElementById('record-phone').value = record.phone || '';
+  
+  // Load processes
+  selectedProcesses = JSON.parse(JSON.stringify(record.processes || []));
+  renderProcessList();
+  updateTotal();
+  
+  // Change save button to update mode
+  const saveBtn = document.getElementById('save-record-btn');
+  if (saveBtn) {
+    saveBtn.textContent = 'Update Record';
+    saveBtn.onclick = function(e) {
+      e.preventDefault();
+      updateExistingRecord(e);
+    };
+  }
+}
+
+async function updateExistingRecord(e) {
+  if (e) e.preventDefault();
+  
+  if (!editingRecordId) {
+    showToast('No record selected for update', 'error');
+    return;
+  }
+  
+  const companyName = document.getElementById('record-company').value.trim();
+  const clientName = document.getElementById('record-client-name').value.trim();
+  const phone = document.getElementById('record-phone').value.trim();
+  
+  if (!companyName || !clientName) {
+    showToast('Company and client name required', 'error');
+    return;
+  }
+  
+  if (selectedProcesses.length === 0) {
+    showToast('Add at least one process', 'error');
+    return;
+  }
+  
+  const total = selectedProcesses.reduce((sum, p) => sum + p.amount + (p.fine || 0) + (p.id_fee || 0), 0);
+  
+  try {
+    const result = await eel.update_record(editingRecordId, clientName, phone, selectedProcesses, total)();
+    if (result.success) {
+      showToast('Record updated successfully', 'success');
+      clearRecordForm();
+      showScreen('companies', document.querySelectorAll('.nav-item')[1]);
+      if (selectedCompanyId) selectCompany(selectedCompanyId);
+    } else {
+      showToast(result.error || 'Update failed', 'error');
+    }
+  } catch (e) {
+    console.error('Update error:', e);
+    showToast('Update error', 'error');
+  }
+}
+
+function clearRecordForm() {
+  document.getElementById('record-company').value = '';
+  document.getElementById('record-client-name').value = '';
+  document.getElementById('record-phone').value = '';
+  document.getElementById('process-select').value = '';
+  document.getElementById('process-amount').value = '';
+  document.getElementById('special-fields').style.display = 'none';
+  document.getElementById('has-fine').checked = false;
+  document.getElementById('has-id-fee').checked = false;
+  document.getElementById('fine-amount').value = '';
+  document.getElementById('id-fee').value = '';
+  document.getElementById('fine-amount').style.display = 'none';
+  document.getElementById('id-fee').style.display = 'none';
+  
+  // Reset datalist
+  const datalist = document.getElementById('client-datalist');
+  if (datalist) datalist.innerHTML = '';
+  currentCompanyClients = [];
+  
+  // Reset edit mode
+  editingRecordId = null;
+  editingRecordIndex = null;
+  
+  // Reset button
+  const saveBtn = document.getElementById('save-record-btn');
+  if (saveBtn) {
+    saveBtn.textContent = 'Save Record';
+    saveBtn.onclick = submitNewRecord;
+  }
+  
+  selectedProcesses = [];
+  renderProcessList();
+  updateTotal();
+}
+
+async function submitNewRecord() {
+  const companyName = document.getElementById('record-company').value.trim();
+  const clientName = document.getElementById('record-client-name').value.trim();
+  const phone = document.getElementById('record-phone').value.trim();
+  
+  if (!companyName || !clientName) {
+    showToast('Company and client name required', 'error');
+    return;
+  }
+  
+  if (selectedProcesses.length === 0) {
+    showToast('Add at least one process', 'error');
+    return;
+  }
+  
+  const total = selectedProcesses.reduce((sum, p) => sum + p.amount + (p.fine || 0) + (p.id_fee || 0), 0);
+  
+  try {
+    const result = await eel.save_record(companyName, clientName, phone, selectedProcesses, total)();
+    if (result.success) {
+      showToast('Record saved successfully', 'success');
+      clearRecordForm();
+      showScreen('dashboard', document.querySelectorAll('.nav-item')[0]);
+    } else {
+      showToast(result.error || 'Save failed', 'error');
+    }
+  } catch (e) {
+    showToast('Save error', 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    UTILITIES
 ═══════════════════════════════════════════════════════════════ */
 
@@ -677,10 +946,46 @@ function formatDate(dateStr) {
 document.addEventListener('DOMContentLoaded', () => {
   loadDashboard();
   
+  // Company field - load existing clients when company changes
+  const companyInput = document.getElementById('record-company');
+  if (companyInput) {
+    companyInput.addEventListener('input', function() {
+      loadCompanyClients(this.value.trim());
+    });
+  }
+  
+  // Initialize save button click handler
+  const saveBtn = document.getElementById('save-record-btn');
+  if (saveBtn) {
+    saveBtn.onclick = submitNewRecord;
+  }
+  
   // Company search functionality
   const searchInput = document.getElementById('company-search');
   if (searchInput) {
     searchInput.addEventListener('input', filterCompanyRecords);
+  }
+  
+  // Client selection filtering
+  const clientInput = document.getElementById('record-client-name');
+  if (clientInput) {
+    clientInput.addEventListener('focus', () => {
+      if (currentCompanyClients.length > 0) {
+        document.getElementById('client-dropdown').classList.add('active');
+      }
+    });
+    
+    clientInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const dropdown = document.getElementById('client-dropdown');
+      dropdown.classList.add('active');
+      
+      const items = dropdown.querySelectorAll('.company-dropdown-item');
+      items.forEach(item => {
+        const name = item.textContent.toLowerCase();
+        item.style.display = name.includes(searchTerm) ? 'block' : 'none';
+      });
+    });
   }
   
   // Number inputs - only accept numeric keys

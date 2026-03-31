@@ -201,7 +201,13 @@
             </div>
             <div class="form-row">
               <div class="form-label">Client Name <span class="req">*</span></div>
-              <input class="form-input" placeholder="Enter client full name" id="record-client-name">
+              <div class="company-input-wrapper">
+                <input type="text" class="form-input" id="record-client-name" placeholder="Type or select client name" autocomplete="off" oninput="onClientSelect(this.value)">
+                <div class="company-dropdown" id="client-dropdown">
+                  <!-- Clients populated by JS -->
+                </div>
+                <button type="button" class="company-dropdown-toggle" id="client-dropdown-toggle" onclick="toggleClientDropdown()">▼</button>
+              </div>
             </div>
             <div class="form-row">
               <div class="form-label">Phone</div>
@@ -225,6 +231,7 @@
                 <option value="Stamping">Stamping</option>
                 <option value="Renew Establishment">Renew Establishment</option>
                 <option value="Update Express">Update Express</option>
+                <option value="Fine">Fine</option>
               </select>
             </div>
             <div class="process-select-row">
@@ -238,7 +245,7 @@
               <div class="special-row" id="fine-row" style="display:none;">
                 <label class="special-checkbox">
                   <input type="checkbox" id="has-fine" onchange="toggleFineInput()">
-                  <span>Insurance Fine</span>
+                  <span>Fine</span>
                 </label>
                 <input type="number" class="special-input" id="fine-amount" placeholder="Fine (AED)" style="display:none;">
               </div>
@@ -278,7 +285,7 @@
             </div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" style="justify-content:center" onclick="saveRecord()">Save Record</button>
+            <button id="save-record-btn" class="btn btn-primary" style="justify-content:center">Save Record</button>
             <button class="btn btn-ghost" style="justify-content:center" onclick="clearRecordForm()">Clear Form</button>
           </div>
         </div>

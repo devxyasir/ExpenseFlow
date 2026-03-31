@@ -35,10 +35,11 @@ def start_app():
     eel.start('index.html', 
               mode='chrome', 
               port=8081, 
-              host='localhost',
+              host='127.0.0.1',
               size=(1400, 900),
               position=(50, 50),
               cmdline_args=[
+                  '--app=http://localhost:8081/index.html',
                   '--disable-features=VizDisplayCompositor,DevTools,TranslateUI',
                   '--disable-extensions',
                   '--disable-component-extensions-with-background-pages',
@@ -49,6 +50,7 @@ def start_app():
                   '--no-default-browser-check',
                   '--window-position=50,50',
                   '--window-size=1400,900',
+                  '--force-device-scale-factor=1',
               ])
 
 def main():

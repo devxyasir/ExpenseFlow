@@ -1,4 +1,5 @@
 """MongoDB connection manager."""
+import certifi
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from config import MONGODB_URI, MONGODB_DB_NAME
@@ -21,7 +22,15 @@ class DatabaseConnection:
         """Connect to MongoDB Atlas."""
         try:
             if self._client is None:
-                self._client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+                # Use certifi for SSL certificates and add TLS options
+                self._client = MongoClient(
+                    MONGODB_URI,
+                    serverSelectionTimeoutMS=5000,
+                    tlsCAFile=certifi.where(),
+                    tlsAllowInvalidCertificates=False,
+                    retryWrites=True,
+                    w='majority'
+                )
                 # Verify connection
                 self._client.admin.command('ping')
                 self._db = self._client[MONGODB_DB_NAME]

@@ -163,6 +163,38 @@ def save_record(company_name, client_name, phone, processes, total_amount):
         return {'success': False, 'error': str(e)}
 
 @eel.expose
+def delete_record(record_id):
+    """Delete a record by ID."""
+    try:
+        record = Record.get_by_id(record_id)
+        if not record:
+            return {'success': False, 'error': 'Record not found'}
+        
+        record.delete()
+        return {'success': True}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+@eel.expose
+def update_record(record_id, client_name, phone, processes, total_amount):
+    """Update an existing record."""
+    try:
+        record = Record.get_by_id(record_id)
+        if not record:
+            return {'success': False, 'error': 'Record not found'}
+        
+        # Update fields
+        record.client_name = client_name
+        record.phone = phone
+        record.processes = processes
+        record.total_amount = total_amount
+        
+        record.save()
+        return {'success': True}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+@eel.expose
 def export_company_pdf(company_id):
     """Export company records to PDF."""
     try:
