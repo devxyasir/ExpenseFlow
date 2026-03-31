@@ -1,0 +1,16 @@
+.env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.pyd
+utils/__pycache__
+utils/*.pyc
+utils/*.pyo
+utils/*.pyd
+utils/*.pyd
+database/__pycache__
+database/*.pyc
+database/*.pyo
+database/*.pyd
+database/*.pyd
