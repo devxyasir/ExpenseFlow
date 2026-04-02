@@ -6,7 +6,7 @@ load_dotenv()
 
 # MongoDB Configuration
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb+srv://jamyasir0534_db_user:eUQKuhA7XJGzLbhG@cluster0.secih0o.mongodb.net/')
-MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME', 'expense_flow')
+MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME', 'nasir')
 
 # Application Settings
 APP_NAME = os.getenv('APP_NAME', 'Expense Flow')

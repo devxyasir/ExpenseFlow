@@ -1,386 +1,728 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Expense Flow</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Flow</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
+
 <body>
 
-<!-- SIDEBAR -->
-<nav class="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-logo">
-      <div class="brand-icon">💸</div>
-      <span class="brand-name">ExpenseFlow</span>
-    </div>
-    <div class="brand-tag">Expense Tracker</div>
-  </div>
-
-  <div class="sidebar-nav">
-    <div class="nav-section-label">main</div>
-
-    <div class="nav-item active" onclick="showScreen('dashboard', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="1" y="1" width="7" height="7" rx="1.5"/>
-        <rect x="10" y="1" width="7" height="7" rx="1.5"/>
-        <rect x="1" y="10" width="7" height="7" rx="1.5"/>
-        <rect x="10" y="10" width="7" height="7" rx="1.5"/>
-      </svg>
-      Dashboard
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="brand-icon">💸</div>
+        <span class="brand-name">ExpenseFlow</span>
+      </div>
+      <div class="brand-tag">Expense Tracker</div>
     </div>
 
-    <div class="nav-item" onclick="showScreen('companies', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="2" y="6" width="14" height="11" rx="1.5"/>
-        <path d="M6 6V4a3 3 0 0 1 6 0v2"/>
-        <circle cx="9" cy="11" r="1.5" fill="currentColor" stroke="none"/>
-      </svg>
-      Companies
-    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">main</div>
 
-    <div class="nav-section-label">records</div>
-
-    <div class="nav-item" onclick="showScreen('addrecord', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="9" cy="9" r="7"/>
-        <path d="M9 6v6M6 9h6"/>
-      </svg>
-      Add Record
-    </div>
-
-    <div class="nav-item" onclick="showScreen('export', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M3 13v2h12v-2M9 2v9M5 7l4 4 4-4"/>
-      </svg>
-      Export
-    </div>
-  </div>
-
-  <div class="sidebar-footer">
-    <div class="version-badge">
-      <span class="version-dot"></span>
-      v1.0 — Active
-    </div>
-  </div>
-</nav>
-
-<!-- MAIN -->
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <span class="topbar-page" id="topbar-page">Dashboard</span>
-      <span class="topbar-sep">·</span>
-      <span class="topbar-sub" id="topbar-sub">Overview</span>
-    </div>
-    <div class="topbar-right">
-      <div class="avatar">EF</div>
-    </div>
-  </div>
-
-  <div class="content">
-
-    <!-- ══════════════ DASHBOARD ══════════════ -->
-    <div class="screen active" id="screen-dashboard">
-      <div class="page-header">
-        <div class="page-title">Overview</div>
-        <div class="page-sub">Real-time expense tracking across all companies</div>
+      <div class="nav-item active" onclick="showScreen('dashboard', this)">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="7" height="7" rx="1.5" />
+          <rect x="10" y="1" width="7" height="7" rx="1.5" />
+          <rect x="1" y="10" width="7" height="7" rx="1.5" />
+          <rect x="10" y="10" width="7" height="7" rx="1.5" />
+        </svg>
+        Dashboard
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Companies</div>
-          <div class="stat-value" id="dash-companies">0</div>
-          <div class="stat-change neutral" id="dash-companies-sub">No companies added yet</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-value amber" id="dash-revenue">AED 0.00</div>
-          <div class="stat-change neutral" id="dash-revenue-sub">Awaiting records</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Records</div>
-          <div class="stat-value" id="dash-records">0</div>
-          <div class="stat-change neutral" id="dash-records-sub">No records added</div>
-        </div>
+      <div class="nav-item" onclick="showScreen('companies', this)">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="6" width="14" height="11" rx="1.5" />
+          <path d="M6 6V4a3 3 0 0 1 6 0v2" />
+          <circle cx="9" cy="11" r="1.5" fill="currentColor" stroke="none" />
+        </svg>
+        Companies
       </div>
 
-      <div class="table-card">
-        <div class="table-card-header">
-          <div>
-            <div class="table-card-title">Recent Entries</div>
-            <div class="table-card-sub">Latest records across all companies</div>
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="showScreen('addrecord', document.querySelectorAll('.nav-item')[2])">Add New</button>
-        </div>
-        <div id="recent-entries-container">
-          <div class="empty-state">
-            <div class="empty-icon">📋</div>
-            <div style="font-weight:500;color:var(--text2);margin-bottom:4px">No recent entries</div>
-            <div style="font-size:12px">Add a company and record to get started</div>
-          </div>
-        </div>
+      <div class="nav-section-label">records</div>
+
+      <div class="nav-item" onclick="showScreen('addrecord', this)">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="9" r="7" />
+          <path d="M9 6v6M6 9h6" />
+        </svg>
+        Add Record
+      </div>
+
+      <div class="nav-item" onclick="showScreen('export', this)">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 13v2h12v-2M9 2v9M5 7l4 4 4-4" />
+        </svg>
+        Export
+      </div>
+
+      <div class="nav-section-label">insights</div>
+
+      <div class="nav-item" onclick="showScreen('analysis', this)">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 13V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z" />
+          <path d="M6 12V8M9 12V6M12 12V10" />
+        </svg>
+        Analysis
+      </div>
+
+      <div class="nav-section-label">info</div>
+      <div class="nav-item" onclick="showScreen('about', this)">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="7" r="4" />
+          <path d="M3 18a6 6 0 0 1 12 0" />
+        </svg>
+        About
       </div>
     </div>
 
-    <!-- ══════════════ COMPANIES ══════════════ -->
-    <div class="screen" id="screen-companies">
-      <div class="page-header">
-        <div class="page-title">Companies</div>
-        <div class="page-sub">Manage companies and their client records</div>
+    <div class="sidebar-footer">
+      <div class="version-badge">
+        <span class="version-dot"></span>
+        v1.0 — Active
       </div>
+    </div>
+  </nav>
 
-      <div class="two-col">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">All Companies</span>
-            <button class="btn btn-primary btn-sm" onclick="showAddCompanyModal()">+ New</button>
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-page" id="topbar-page">Dashboard</span>
+        <span class="topbar-sep">·</span>
+        <span class="topbar-sub" id="topbar-sub">Overview</span>
+      </div>
+      <div class="topbar-right">
+        <div class="avatar">EF</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══════════════ DASHBOARD ══════════════ -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="page-header">
+          <div class="page-title">Overview</div>
+          <div class="page-sub">Real-time expense tracking across all companies</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Companies</div>
+            <div class="stat-value" id="dash-companies">0</div>
+            <div class="stat-change neutral" id="dash-companies-sub">No companies added yet</div>
           </div>
-          <div class="company-list" id="company-list">
-            <!-- Companies populated by JS -->
+          <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value amber" id="dash-revenue">AED 0.00</div>
+            <div class="stat-change neutral" id="dash-revenue-sub">Awaiting records</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Records</div>
+            <div class="stat-value" id="dash-records">0</div>
+            <div class="stat-change neutral" id="dash-records-sub">No records added</div>
           </div>
         </div>
 
-        <div class="panel" id="company-detail-panel">
-          <div class="panel-header">
+        <div class="table-card">
+          <div class="table-card-header">
             <div>
-              <div class="panel-title" id="detail-company-name">Select a company</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px" id="detail-company-stats">No company selected</div>
+              <div class="table-card-title">Recent Entries</div>
+              <div class="table-card-sub">Latest records across all companies</div>
             </div>
-            <div style="display:flex;gap:6px">
-              <button class="btn btn-outline btn-sm" onclick="exportCompanyPDF()">Export PDF</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteSelectedCompany()">Delete</button>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div class="date-filter-wrap" style="width:160px;height:32px;">
+                <span class="search-icon" style="font-size:10px;">📅</span>
+                <input type="date" class="date-filter-input" id="dash-date-filter" onchange="loadDashboard()"
+                  style="font-size:12px;padding:4px 8px 4px 28px;">
+              </div>
+              <button class="btn btn-outline btn-sm"
+                onclick="showScreen('addrecord', document.querySelectorAll('.nav-item')[2])">Add New</button>
             </div>
           </div>
-
-          <div class="search-wrap">
-            <span class="search-icon">🔍</span>
-            <input class="search-input" placeholder="Search by client name..." id="company-search">
+          <div id="recent-entries-container">
+            <div class="empty-state">
+              <div class="empty-icon">📋</div>
+              <div style="font-weight:500;color:var(--text2);margin-bottom:4px">No recent entries</div>
+              <div style="font-size:12px">Add a company and record to get started</div>
+            </div>
           </div>
-
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Client Name</th>
-                <th>Phone</th>
-                <th>Processes</th>
-                <th>Total Amount</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="company-records-table">
-              <!-- Records populated by JS -->
-            </tbody>
-          </table>
         </div>
       </div>
-    </div>
 
-    <!-- ══════════════ ADD RECORD ══════════════ -->
-    <div class="screen" id="screen-addrecord">
-      <div class="page-header">
-        <div class="page-title">Add New Record</div>
-        <div class="page-sub">Enter client information and select visa/finance processes</div>
+      <!-- ══════════════ COMPANIES ══════════════ -->
+      <div class="screen" id="screen-companies">
+        <div class="page-header">
+          <div class="page-title">Companies</div>
+          <div class="page-sub">Manage companies and their client records</div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">All Companies</span>
+              <button class="btn btn-primary btn-sm" onclick="showAddCompanyModal()">+ New</button>
+            </div>
+            <div class="company-list" id="company-list">
+              <!-- Companies populated by JS -->
+            </div>
+          </div>
+
+          <div class="panel" id="company-detail-panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title" id="detail-company-name">Select a company</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px" id="detail-company-stats">No company
+                  selected</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-outline btn-sm" onclick="exportCompanyPDF()">Export PDF</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSelectedCompany()">Delete</button>
+              </div>
+            </div>
+
+            <div class="search-container">
+              <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input class="search-input" placeholder="Search by client name..." id="company-search">
+              </div>
+              <div class="date-filter-wrap">
+                <span class="search-icon">📅</span>
+                <input type="date" class="date-filter-input" id="date-filter" onchange="filterCompanyRecords()">
+              </div>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Phone</th>
+                  <th>Processes</th>
+                  <th>Total Amount</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="company-records-table">
+                <!-- Records populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <div class="form-layout">
-        <div class="form-card">
-          <div class="form-section">
-            <div class="form-section-label">Client Information</div>
-            <div class="form-row">
-              <div class="form-label">Company <span class="req">*</span></div>
-              <div class="company-input-wrapper">
-                <input type="text" class="form-input" id="record-company" placeholder="Type new or select existing company..." autocomplete="off">
-                <div class="company-dropdown" id="company-dropdown">
-                  <!-- Companies populated by JS -->
+      <!-- ══════════════ ADD RECORD ══════════════ -->
+      <div class="screen" id="screen-addrecord">
+        <div class="page-header">
+          <div class="page-title">Add New Record</div>
+          <div class="page-sub">Enter client information and select visa/finance processes</div>
+        </div>
+
+        <div class="form-layout">
+          <div class="form-card">
+            <div class="form-section">
+              <div class="form-section-label">Client Information</div>
+              <div class="form-row">
+                <div class="form-label">Company <span class="req">*</span></div>
+                <div class="company-input-wrapper">
+                  <input type="text" class="form-input" id="record-company"
+                    placeholder="Type new or select existing company..." autocomplete="off">
+                  <div class="company-dropdown" id="company-dropdown">
+                    <!-- Companies populated by JS -->
+                  </div>
+                  <button type="button" class="company-dropdown-toggle" id="company-dropdown-toggle"
+                    onclick="toggleCompanyDropdown()">▼</button>
                 </div>
-                <button type="button" class="company-dropdown-toggle" id="company-dropdown-toggle" onclick="toggleCompanyDropdown()">▼</button>
               </div>
-            </div>
-            <div class="form-row">
-              <div class="form-label">Client Name <span class="req">*</span></div>
-              <div class="company-input-wrapper">
-                <input type="text" class="form-input" id="record-client-name" placeholder="Type or select client name" autocomplete="off" oninput="onClientSelect(this.value)">
-                <div class="company-dropdown" id="client-dropdown">
-                  <!-- Clients populated by JS -->
+              <div class="form-row">
+                <div class="form-label">Client Name <span class="req">*</span></div>
+                <div class="company-input-wrapper">
+                  <input type="text" class="form-input" id="record-client-name" placeholder="Type or select client name"
+                    autocomplete="off" oninput="onClientSelect(this.value)">
+                  <div class="company-dropdown" id="client-dropdown">
+                    <!-- Clients populated by JS -->
+                  </div>
+                  <button type="button" class="company-dropdown-toggle" id="client-dropdown-toggle"
+                    onclick="toggleClientDropdown()">▼</button>
                 </div>
-                <button type="button" class="company-dropdown-toggle" id="client-dropdown-toggle" onclick="toggleClientDropdown()">▼</button>
+              </div>
+              <div class="form-row">
+                <div class="form-label">Phone</div>
+                <input class="form-input" placeholder="+971 XX XXX XXXX" id="record-phone">
+              </div>
+              <div class="form-row">
+                <div class="form-label">Record Date <span class="req">*</span></div>
+                <input type="date" class="form-input" id="record-date">
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-label">Phone</div>
-              <input class="form-input" placeholder="+971 XX XXX XXXX" id="record-phone">
+
+            <div class="form-section">
+              <div class="form-section-label">Visa / Finance Processes</div>
+              <div class="process-select-row">
+                <div class="form-label">Process</div>
+                <select class="form-input" id="process-select">
+                  <option value="">Select a process...</option>
+                  <option value="Typing">Typing</option>
+                  <option value="Labour Fees">Labour Fees</option>
+                  <option value="Labour Insurance">Labour Insurance</option>
+                  <option value="ILOE Insurance Fine">ILOE Insurance Fine</option>
+                  <option value="Voucher">Voucher</option>
+                  <option value="New Establishment">New Establishment</option>
+                  <option value="Labour Fine">Labour Fine</option>
+                  <option value="Taqeem">Taqeem</option>
+                  <option value="Entry Permit">Entry Permit</option>
+                  <option value="Change Status">Change Status</option>
+                  <option value="Tawjeeh Class">Tawjeeh Class</option>
+                  <option value="ILOE Insurance">ILOE Insurance</option>
+                  <option value="Medical + ID">Medical + ID</option>
+                  <option value="Stamping">Stamping</option>
+                  <option value="Renew Establishment">Renew Establishment</option>
+                  <option value="Update Express">Update Express</option>
+                  <option value="Immegration Fine">Immegration Fine</option>
+                  <option value="Cancellation">Cancellation</option>
+                  <option value="Custom">Custom Process</option>
+                </select>
+              </div>
+              <div class="process-select-row" id="custom-name-row" style="display:none;">
+                <div class="form-label">Process Name <span class="req">*</span></div>
+                <input type="text" class="form-input" id="custom-process-name" placeholder="Enter process name">
+              </div>
+              <div class="process-select-row">
+                <div class="form-label">Amount (AED)</div>
+                <input type="number" class="form-input amount-input" id="process-amount" placeholder="Enter amount"
+                  min="0" step="0.01">
+                <button class="btn btn-primary" onclick="addProcessToRecord()">Add</button>
+              </div>
+
+              <!-- Special fields for ILOE and Medical -->
+              <div class="special-fields" id="special-fields" style="display:none;">
+                <div class="special-row" id="fine-row" style="display:none;">
+                  <label class="special-checkbox">
+                    <input type="checkbox" id="has-fine" onchange="toggleFineInput()">
+                    <span>Fine</span>
+                  </label>
+                  <input type="number" class="special-input" id="fine-amount" placeholder="Fine (AED)"
+                    style="display:none;">
+                </div>
+                <div class="special-row" id="additional-row" style="display:none;">
+                  <label class="special-checkbox">
+                    <input type="checkbox" id="has-id-fee" onchange="toggleAdditionalInput()">
+                    <span>ID Fee</span>
+                  </label>
+                  <input type="number" class="special-input" id="id-fee" placeholder="Amount (AED)"
+                    style="display:none;">
+                </div>
+              </div>
+
+              <div class="process-list" id="process-list">
+                <div class="process-list-header">
+                  <span>Process</span>
+                  <span>Amount</span>
+                  <span></span>
+                </div>
+                <div id="process-list-items">
+                  <!-- Process items added here -->
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="form-section">
-            <div class="form-section-label">Visa / Finance Processes</div>
-            <div class="process-select-row">
-              <div class="form-label">Process</div>
-              <select class="form-input" id="process-select">
-                <option value="">Select a process...</option>
-                <option value="Typing">Typing</option>
-                <option value="Labour Fees + Insurance">Labour Fees + Insurance</option>
-                <option value="Entry Permit">Entry Permit</option>
-                <option value="Change Status">Change Status</option>
-                <option value="Tawjeeh Class">Tawjeeh Class</option>
-                <option value="ILOE Insurance">ILOE Insurance</option>
-                <option value="Medical + ID">Medical + ID</option>
-                <option value="Stamping">Stamping</option>
-                <option value="Renew Establishment">Renew Establishment</option>
-                <option value="Update Express">Update Express</option>
-                <option value="Fine">Fine</option>
-              </select>
+          <div class="total-card">
+            <div class="total-label">Total Amount</div>
+            <div class="total-amount" id="total-display">AED 0.00</div>
+            <div class="total-breakdown">
+              <div class="breakdown-row">
+                <span>Processes selected</span>
+                <span class="bval" id="proc-count">0</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Subtotal</span>
+                <span class="bval" id="proc-subtotal">AED 0.00</span>
+              </div>
             </div>
-            <div class="process-select-row">
-              <div class="form-label">Amount (AED)</div>
-              <input type="number" class="form-input amount-input" id="process-amount" placeholder="Enter amount" min="0" step="0.01">
-              <button class="btn btn-primary" onclick="addProcessToRecord()">Add</button>
+            <div class="form-actions">
+              <button id="save-record-btn" class="btn btn-primary" style="justify-content:center">Save Record</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="clearRecordForm()">Clear
+                Form</button>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- Special fields for ILOE and Medical -->
-            <div class="special-fields" id="special-fields" style="display:none;">
-              <div class="special-row" id="fine-row" style="display:none;">
-                <label class="special-checkbox">
-                  <input type="checkbox" id="has-fine" onchange="toggleFineInput()">
-                  <span>Fine</span>
-                </label>
-                <input type="number" class="special-input" id="fine-amount" placeholder="Fine (AED)" style="display:none;">
+      <!-- ══════════════ EXPORT ══════════════ -->
+      <div class="screen" id="screen-export">
+        <div class="page-header">
+          <div class="page-title">Export Records</div>
+          <div class="page-sub">Export company records as professional PDF receipts</div>
+        </div>
+
+        <div class="export-layout">
+          <div class="preview-card">
+            <div class="preview-header">
+              <div>
+                <div class="panel-title">PDF Preview</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px" id="preview-company">Select a company to
+                  preview</div>
               </div>
-              <div class="special-row" id="additional-row" style="display:none;">
-                <label class="special-checkbox">
-                  <input type="checkbox" id="has-id-fee" onchange="toggleAdditionalInput()">
-                  <span>ID Fee</span>
-                </label>
-                <input type="number" class="special-input" id="id-fee" placeholder="Amount (AED)" style="display:none;">
+              <span class="badge badge-gray" id="preview-badge">No selection</span>
+            </div>
+            <div class="preview-body">
+              <div class="pdf-preview" id="pdf-preview">
+                <div style="text-align:center;color:var(--text3);">
+                  <div style="font-size:48px;margin-bottom:16px;">📄</div>
+                  <div>Select a company to generate preview</div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="process-list" id="process-list">
-              <div class="process-list-header">
-                <span>Process</span>
-                <span>Amount</span>
-                <span></span>
+          <div class="export-options">
+            <div class="export-opt-header">
+              <div class="panel-title">Export Settings</div>
+            </div>
+            <div class="export-opt-body">
+              <div class="opt-row">
+                <div class="opt-label">Select Company</div>
+                <select class="form-input" id="export-company-select" onchange="updateExportPreview()">
+                  <option value="">Select a company...</option>
+                </select>
               </div>
-              <div id="process-list-items">
-                <!-- Process items added here -->
+
+              <div class="opt-row">
+                <div class="opt-label">Save Location</div>
+                <div class="path-display">
+                  <span id="export-path">Desktop/Expense Flow/</span>
+                </div>
+              </div>
+
+              <div class="opt-row">
+                <div class="opt-label">File Format</div>
+                <select class="form-input" id="export-format">
+                  <option value="pdf">PDF Document</option>
+                  <option value="csv">CSV Spreadsheet</option>
+                </select>
+              </div>
+
+              <div style="padding-top:8px;border-top:1px solid var(--border)">
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="exportToPDF()">
+                  Export to PDF
+                </button>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="total-card">
-          <div class="total-label">Total Amount</div>
-          <div class="total-amount" id="total-display">AED 0.00</div>
-          <div class="total-breakdown">
-            <div class="breakdown-row">
-              <span>Processes selected</span>
-              <span class="bval" id="proc-count">0</span>
+      <!-- ══════════════ ANALYSIS ══════════════ -->
+      <div class="screen" id="screen-analysis">
+        <div class="page-header">
+          <div class="page-title">Analysis</div>
+          <div class="page-sub">Deep-dive insights and performance metrics</div>
+        </div>
+        <div id="analysis-capture-area">
+          <div class="analysis-controls-row">
+            <div class="analysis-filter">
+              <span class="filter-label">Viewing For:</span>
+              <select class="form-input" id="analysis-company-filter" onchange="loadAnalysis(this.value)" style="width:240px; height:36px; padding:4px 12px; font-size:13px;">
+                <option value="">Overall Analysis (All Companies)</option>
+              </select>
             </div>
-            <div class="breakdown-row">
-              <span>Subtotal</span>
-              <span class="bval" id="proc-subtotal">AED 0.00</span>
+            <button class="btn btn-primary" onclick="exportAnalysisPDF()" id="export-analysis-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4M7 10l5 5 5-5M12 15V3"/></svg>
+              Export Professional Report
+            </button>
+          </div>
+
+          <div class="stats-grid" id="analysis-kpi-grid">
+            <!-- KPI Cards will be injected here -->
+          </div>
+
+        <div class="analysis-grid">
+          <!-- Row 1: Company Metrics -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Company Spend Analysis</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="companySpendChart"></canvas>
             </div>
           </div>
-          <div class="form-actions">
-            <button id="save-record-btn" class="btn btn-primary" style="justify-content:center">Save Record</button>
-            <button class="btn btn-ghost" style="justify-content:center" onclick="clearRecordForm()">Clear Form</button>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Expense Share by Company</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="companyShareChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Row 2: Trend Line (Wide) -->
+          <div class="panel" style="grid-column: span 2;">
+            <div class="panel-header">
+              <span class="panel-title">Expense Timeline Trend (Last 30 Days)</span>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+              <canvas id="timelineTrendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Row 3: Process Analysis -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Costliest Processes (Total Spend)</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="processCostChart"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Process Frequency (Utilization)</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="processFreqChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Row 4: Top Clients Leaderboard (Wide) -->
+          <div class="panel" style="grid-column: span 2;">
+            <div class="panel-header">
+              <span class="panel-title">Top 10 High-Value Clients</span>
+            </div>
+            <div id="leaderboard-container">
+              <!-- Leaderboard injected here -->
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══════════════ EXPORT ══════════════ -->
-    <div class="screen" id="screen-export">
-      <div class="page-header">
-        <div class="page-title">Export Records</div>
-        <div class="page-sub">Export company records as professional PDF receipts</div>
+      <!-- ABOUT SCREEN -->
+      <div class="screen" id="screen-about">
+        <div class="analysis-header">
+          <h1 class="analysis-title">About the Developer</h1>
+          <p class="analysis-subtitle">Built with precision for visa and finance professionals</p>
+        </div>
+
+        <div class="about-hero-card">
+          <div class="profile-container">
+            <div class="profile-avatar">MY</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="hero-content">
+            <div class="hero-header">
+              <h2 class="hero-name">Muhammad Yasir</h2>
+              <span class="hero-handle">@devxyasir</span>
+            </div>
+            <div class="hero-tag">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              AI & Automation Engineer
+            </div>
+            <p class="hero-bio">Building intelligent tools that solve real-world problems. Passionate about clean
+              software, automation, and turning complex workflows into seamless experiences. ExpenseFlow was crafted to
+              bring professional-grade record management to visa and finance consultancies in the UAE.</p>
+            <div class="hero-meta">
+              <span>📍 Dubai, UAE · Pakistan</span>
+              <span class="meta-sep">|</span>
+              <span>🎓 BS Information Technology — BZU Lodhran</span>
+            </div>
+          </div>
+          <div class="hero-decoration"></div>
+        </div>
+
+        <div class="about-grid">
+          <!-- Connect Section -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">CONNECT</span>
+            </div>
+            <div class="connect-list">
+              <a href="https://github.com/devxyasir" class="connect-item" target="_blank">
+                <div class="connect-icon github">
+                  <svg viewBox="0 0 16 16" fill="currentColor">
+                    <path
+                      d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                  </svg>
+                </div>
+                <div class="connect-info">
+                  <div class="connect-label">GitHub</div>
+                  <div class="connect-value">github.com/devxyasir</div>
+                </div>
+                <svg class="connect-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 17l9.2-9.2M17 17V7.8H7.8" />
+                </svg>
+              </a>
+              <a href="https://linkedin.com/in/devxyasir" class="connect-item" target="_blank">
+                <div class="connect-icon linkedin">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </div>
+                <div class="connect-info">
+                  <div class="connect-label">LinkedIn</div>
+                  <div class="connect-value">linkedin.com/in/devxyasir</div>
+                </div>
+                <svg class="connect-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 17l9.2-9.2M17 17V7.8H7.8" />
+                </svg>
+              </a>
+              <a href="mailto:devxyasir@gmail.com" class="connect-item">
+                <div class="connect-icon email">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </div>
+                <div class="connect-info">
+                  <div class="connect-label">Email</div>
+                  <div class="connect-value">devxyasir@gmail.com</div>
+                </div>
+                <svg class="connect-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 17l9.2-9.2M17 17V7.8H7.8" />
+                </svg>
+              </a>
+              <a href="https://wa.me/+971557515330" class="connect-item" target="_blank">
+                <div class="connect-icon whatsapp">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.38 8.38 0 0 1 3.8.9L21 4.5z" />
+                  </svg>
+                </div>
+                <div class="connect-info">
+                  <div class="connect-label">WhatsApp</div>
+                  <div class="connect-value">Available for support</div>
+                </div>
+                <svg class="connect-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 17l9.2-9.2M17 17V7.8H7.8" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Tech Stack -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">TECH STACK</span>
+            </div>
+            <div class="panel-body" style="padding:20px;">
+              <div class="tag-group">
+                <span class="tech-tag primary">Python</span>
+                <span class="tech-tag primary">Eel</span>
+                <span class="tech-tag primary">AI / ML</span>
+                <span class="tech-tag primary">FastAPI</span>
+                <span class="tech-tag">LangChain</span>
+                <span class="tech-tag">React</span>
+                <span class="tech-tag">Node.js</span>
+                <span class="tech-tag">PostgreSQL</span>
+                <span class="tech-tag">Docker</span>
+                <span class="tech-tag">Computer Vision</span>
+                <span class="tech-tag">NLP</span>
+              </div>
+
+              <div class="certifications-section" style="margin-top:24px;">
+                <div class="cert-title"
+                  style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">
+                  CERTIFICATIONS</div>
+                <ul class="cert-list" style="list-style:none;padding:0;font-size:13px;color:var(--text2);">
+                  <li style="margin-bottom:8px;display:flex;align-items:center;gap:10px;"><span
+                      style="color:var(--amber);">•</span> Generative AI with LangChain — CampusX</li>
+                  <li style="margin-bottom:8px;display:flex;align-items:center;gap:10px;"><span
+                      style="color:var(--amber);">•</span> 100 Days of Machine Learning — CampusX</li>
+                  <li style="margin-bottom:8px;display:flex;align-items:center;gap:10px;"><span
+                      style="color:var(--amber);">•</span> Cybersecurity for Everyone — Coursera</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- App Info -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">APP INFO</span>
+            </div>
+            <div class="panel-body" style="padding:20px;">
+              <div class="info-stat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="info-stat-card"
+                  style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                  <div class="stat-val" style="font-size:18px;font-weight:600;color:var(--text);">v1.0</div>
+                  <div class="stat-lbl" style="font-size:10px;color:var(--text3);text-transform:uppercase;">Current
+                    version</div>
+                </div>
+                <div class="info-stat-card"
+                  style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                  <div class="stat-val" style="font-size:18px;font-weight:600;color:var(--text);">AED</div>
+                  <div class="stat-lbl" style="font-size:10px;color:var(--text3);text-transform:uppercase;">Currency
+                  </div>
+                </div>
+                <div class="info-stat-card"
+                  style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                  <div class="stat-val" style="font-size:18px;font-weight:600;color:var(--text);">18</div>
+                  <div class="stat-lbl" style="font-size:10px;color:var(--text3);text-transform:uppercase;">Process
+                    types</div>
+                </div>
+                <div class="info-stat-card"
+                  style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                  <div class="stat-val" style="font-size:18px;font-weight:600;color:var(--text);">PDF</div>
+                  <div class="stat-lbl" style="font-size:10px;color:var(--text3);text-transform:uppercase;">Export
+                    format</div>
+                </div>
+              </div>
+
+              <div class="built-with" style="margin-top:20px;">
+                <div class="cert-title"
+                  style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;">BUILT WITH
+                </div>
+                <div class="tag-group" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+                  <span class="tech-tag mini"
+                    style="font-size:10px;padding:4px 8px;background:var(--card2);border:1px solid var(--border);border-radius:4px;color:var(--text2);">Eel</span>
+                  <span class="tech-tag mini"
+                    style="font-size:10px;padding:4px 8px;background:var(--card2);border:1px solid var(--border);border-radius:4px;color:var(--text2);">SQLite</span>
+                  <span class="tech-tag mini"
+                    style="font-size:10px;padding:4px 8px;background:var(--card2);border:1px solid var(--border);border-radius:4px;color:var(--text2);">ReportLab</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="export-layout">
-        <div class="preview-card">
-          <div class="preview-header">
-            <div>
-              <div class="panel-title">PDF Preview</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px" id="preview-company">Select a company to preview</div>
-            </div>
-            <span class="badge badge-gray" id="preview-badge">No selection</span>
-          </div>
-          <div class="preview-body">
-            <div class="pdf-preview" id="pdf-preview">
-              <div style="text-align:center;color:var(--text3);">
-                <div style="font-size:48px;margin-bottom:16px;">📄</div>
-                <div>Select a company to generate preview</div>
-              </div>
-            </div>
-          </div>
+    </div>
+  </main>
+
+  <!-- Add Company Modal -->
+  <div class="modal-overlay" id="add-company-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add New Company</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-row" style="grid-template-columns: 1fr;">
+          <input class="form-input" placeholder="Enter company name" id="new-company-name">
         </div>
-
-        <div class="export-options">
-          <div class="export-opt-header">
-            <div class="panel-title">Export Settings</div>
-          </div>
-          <div class="export-opt-body">
-            <div class="opt-row">
-              <div class="opt-label">Select Company</div>
-              <select class="form-input" id="export-company-select" onchange="updateExportPreview()">
-                <option value="">Select a company...</option>
-              </select>
-            </div>
-
-            <div class="opt-row">
-              <div class="opt-label">Save Location</div>
-              <div class="path-display">
-                <span id="export-path">Desktop/Expense Flow/</span>
-              </div>
-            </div>
-
-            <div class="opt-row">
-              <div class="opt-label">File Format</div>
-              <select class="form-input" id="export-format">
-                <option value="pdf">PDF Document</option>
-                <option value="csv">CSV Spreadsheet</option>
-              </select>
-            </div>
-
-            <div style="padding-top:8px;border-top:1px solid var(--border)">
-              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="exportToPDF()">
-                Export to PDF
-              </button>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="hideAddCompanyModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="addNewCompany()">Add Company</button>
       </div>
     </div>
-
   </div>
-</main>
 
-<!-- Add Company Modal -->
-<div class="modal-overlay" id="add-company-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Add New Company</div>
-    </div>
-    <div class="modal-body">
-      <div class="form-row" style="grid-template-columns: 1fr;">
-        <input class="form-input" placeholder="Enter company name" id="new-company-name">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="hideAddCompanyModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="addNewCompany()">Add Company</button>
-    </div>
-  </div>
-</div>
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toast-container"></div>
-
-<!-- Eel -->
-<script src="eel.js"></script>
-<script src="js/app.js"></script>
+  <!-- Eel -->
+  <script src="eel.js"></script>
+  <script src="js/app.js"></script>
 </body>
+
 </html>

@@ -45,18 +45,28 @@ def get_dashboard_stats():
         return {'success': False, 'error': str(e)}
 
 @eel.expose
-def get_recent_records(limit=5):
-    """Get recent records for dashboard."""
+def get_recent_records(limit=10, date_filter=None):
+    """Get recent records for dashboard with optional date filter."""
     try:
-        records = Record.get_recent(limit)
+        # If filtering by date, we might want to get all and filter
+        if date_filter:
+            # Simple filtering logic
+            all_records = Record.get_all()
+            records = [r for r in all_records if r.date.isoformat().startswith(date_filter)]
+            # If limit is specified, slice it
+            # records = records[:limit]
+        else:
+            records = Record.get_recent(limit)
+
         result = []
-        
         for record in records:
             company = Company.get_by_id(record.company_id)
             result.append({
                 '_id': str(record._id),
                 'client_name': record.client_name,
                 'company_name': company.name if company else 'Unknown',
+                'phone': record.phone,
+                'processes': record.processes,
                 'total_amount': record.total_amount,
                 'date': record.date.isoformat() if record.date else None
             })
@@ -132,7 +142,7 @@ def get_company_records(company_id):
         return []
 
 @eel.expose
-def save_record(company_name, client_name, phone, processes, total_amount):
+def save_record(company_name, client_name, phone, processes, total_amount, date_str=None):
     """Save a new record."""
     try:
         # Get or create company
@@ -148,13 +158,22 @@ def save_record(company_name, client_name, phone, processes, total_amount):
             company = Company(name=company_name)
             company.save()
         
+        # Parse date if provided
+        record_date = None
+        if date_str:
+            try:
+                record_date = datetime.fromisoformat(date_str)
+            except:
+                pass
+
         # Create record
         record = Record(
             company_id=company._id,
             client_name=client_name,
             phone=phone,
             processes=processes,
-            total_amount=total_amount
+            total_amount=total_amount,
+            date=record_date
         )
         record.save()
         
@@ -176,7 +195,7 @@ def delete_record(record_id):
         return {'success': False, 'error': str(e)}
 
 @eel.expose
-def update_record(record_id, client_name, phone, processes, total_amount):
+def update_record(record_id, client_name, phone, processes, total_amount, date_str=None):
     """Update an existing record."""
     try:
         record = Record.get_by_id(record_id)
@@ -188,6 +207,12 @@ def update_record(record_id, client_name, phone, processes, total_amount):
         record.phone = phone
         record.processes = processes
         record.total_amount = total_amount
+        
+        if date_str:
+            try:
+                record.date = datetime.fromisoformat(date_str)
+            except:
+                pass
         
         record.save()
         return {'success': True}
@@ -233,3 +258,103 @@ def get_process_config():
         'available': AVAILABLE_PROCESSES,
         'special': SPECIAL_PROCESSES
     }
+@eel.expose
+def get_analysis_data(company_id=None):
+    """Aggregate stats and metrics. Supports filtering by specific company_id."""
+    try:
+        companies = Company.get_all()
+        if company_id:
+            records = Record.get_by_company(company_id)
+        else:
+            records = Record.get_all()
+        
+        # 1. KPI Calculations
+        total_revenue = sum(r.total_amount for r in records)
+        active_companies = len(companies)
+        total_clients = len(records)
+        avg_per_client = total_revenue / total_clients if total_clients > 0 else 0
+        
+        total_processes = 0
+        for r in records:
+            total_processes += len(r.processes)
+            
+        # 2. Company Spend & Share
+        company_spend = {}
+        for r in records:
+            c_name = 'Unknown'
+            # Find company name
+            for c in companies:
+                if str(c._id) == str(r.company_id):
+                    c_name = c.name
+                    break
+            company_spend[c_name] = company_spend.get(c_name, 0) + r.total_amount
+            
+        # 3. Process cost & frequency
+        process_stats = {} # {name: {cost: 0, freq: 0}}
+        for r in records:
+            for p in r.processes:
+                name = p.get('name', 'Unknown')
+                cost = (p.get('amount') or 0) + (p.get('id_fee') or 0) + (p.get('fine') or 0)
+                if name not in process_stats:
+                    process_stats[name] = {'cost': 0, 'freq': 0}
+                process_stats[name]['cost'] += cost
+                process_stats[name]['freq'] += 1
+                
+        # 4. Timeline Trend (last 30 days)
+        from datetime import date, timedelta
+        today = date.today()
+        timeline = {}
+        for i in range(30):
+            d = today - timedelta(days=i)
+            timeline[d.strftime("%Y-%m-%d")] = 0
+            
+        for r in records:
+            d_str = r.date.strftime("%Y-%m-%d")
+            if d_str in timeline:
+                timeline[d_str] += r.total_amount
+        
+        sorted_timeline = sorted(timeline.items())
+        
+        # 5. Leaderboard (Top 10)
+        sorted_records = sorted(records, key=lambda x: x.total_amount, reverse=True)
+        leaderboard = []
+        for r in sorted_records[:10]:
+            c_name = 'Unknown'
+            for c in companies:
+                if str(c._id) == str(r.company_id):
+                    c_name = c.name
+                    break
+            leaderboard.append({
+                'client': r.client_name,
+                'company': c_name,
+                'amount': r.total_amount,
+                'date': r.date.strftime("%b %d, %Y")
+            })
+
+        return {
+            'success': True,
+            'kpis': {
+                'total_revenue': total_revenue,
+                'active_companies': active_companies,
+                'total_clients': total_clients,
+                'total_processes': total_processes,
+                'avg_per_client': avg_per_client
+            },
+            'company_data': {
+                'labels': list(company_spend.keys()),
+                'values': list(company_spend.values())
+            },
+            'process_data': {
+                'labels': list(process_stats.keys()),
+                'costs': [s['cost'] for s in process_stats.values()],
+                'freqs': [s['freq'] for s in process_stats.values()]
+            },
+            'timeline_data': {
+                'labels': [item[0] for item in sorted_timeline],
+                'values': [item[1] for item in sorted_timeline]
+            },
+            'leaderboard': leaderboard
+        }
+    except Exception as e:
+        print(f"Analysis data error: {e}")
+        return {'success': False, 'error': str(e)}

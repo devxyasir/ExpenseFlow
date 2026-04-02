@@ -14,3 +14,5 @@ database/*.pyc
 database/*.pyo
 database/*.pyd
 database/*.pyd
+dist/*
+build/*
